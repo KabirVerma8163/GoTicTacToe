@@ -2,12 +2,12 @@ package main
 
 import(
 	// "bufio"
-	"fmt"
-	"os"
-	"os/exec"
 	// "strings"
 	// "strconv"
 	// "time"
+	"fmt"
+	"os"
+	"os/exec"
 )
 
 func drawBoard (pieces [9]string, player int){
@@ -30,20 +30,6 @@ func drawBoard (pieces [9]string, player int){
 	}
 }
 
-func checkWinner(pieces [9]string)bool{
-	for i := 0; i <= 2; i+=1{
-		if pieces[i] == pieces[i+3] && pieces[i] == pieces[i+6]{
-			return true
-		}
-	}
-	for i := 0; i <= 2; i+=3{
-		if pieces[i] == pieces[i+1] && pieces[i] == pieces[i+2]{
-			return true
-		}
-	}
-	return false
-}
-
 func getBox(pieces [9]string, player int)int{
 	turn, boxInLimit, boxNotFilled := 0, false, false
 	var index int
@@ -51,19 +37,20 @@ func getBox(pieces [9]string, player int)int{
 	boxNotFilledErr := "The box you provided was already filled in a previous move.\n"
 	var errString string
 
-
 	for !(boxInLimit && boxNotFilled) {
 		drawBoard(pieces, player)
 		if turn > 0{
 			errString = ""
+			// Decides which errors are applicaple for box entry
 			if !boxInLimit {errString += boxInLimitErr} else if !boxNotFilled {errString += boxNotFilledErr}
 		}
 
 		fmt.Println("Which number would you like to change?")
-		if errString != "" {fmt.Print(errString)}
+		if errString != "" {fmt.Print(errString)} // Prints error
 		fmt.Printf("Give your number here: ")
 
 		fmt.Scanln(&index)
+		// Next three clear the console after each question has been asked
 		c := exec.Command("clear")
     c.Stdout = os.Stdout
     c.Run()
@@ -78,6 +65,34 @@ func getBox(pieces [9]string, player int)int{
 	return index
 }
 
+func checkWinner(pieces [9]string)(bool, int){
+	isWinner := false
+	winner := 0
+
+	for i := 0; i <= 8; i+=1{
+		if pieces[i] != ""{
+			if i <= 2{
+				if (pieces[i] == pieces[i+3] && pieces[i] == pieces[i+6]){isWinner = true}
+				if i == 0 && (pieces[0] == pieces [4] && pieces[0] == pieces[8]) {isWinner = true}
+				if i == 2 && (pieces[2] == pieces [4] && pieces[2] == pieces[6]) {isWinner = true}
+			} else if i%3 == 0 && (pieces[i] == pieces[i+1] && pieces[i] == pieces[i+2]){
+				isWinner = true
+			}
+			if isWinner{
+				if pieces[i] == "X" {winner = 1} else {winner = 2}
+				break
+			}
+		}
+	}
+	return isWinner, winner
+}
+
+func computerMove(pieces [9]string)int{
+	var move int
+	
+	return move
+}
+
 func main (){
 	c := exec.Command("clear")
 	c.Stdout = os.Stdout
@@ -85,9 +100,10 @@ func main (){
 	fmt.Println("\nWelcome To Tic Tac Toe")
 	var pieces [9]string
 	turn := 0
-	player := 1
+	player, winningPlayer := 1, 0
+	gameOver := false
 
-	for true {
+	for !gameOver {
 		index := getBox(pieces, player)
 		if turn%2 == 0{
 			pieces[index - 1] = "X"
@@ -97,5 +113,9 @@ func main (){
 			player = 1
 		}
 		turn ++
+		gameOver, winningPlayer = checkWinner(pieces)
 	}
+
+	fmt.Println("Game Over. \nPlayer", winningPlayer, "is the winner. \nPress Enter to exit.")
+	fmt.Scanln()
 }
